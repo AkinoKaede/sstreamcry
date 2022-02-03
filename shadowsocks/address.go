@@ -22,7 +22,7 @@ func ParseDestination(dest net.Destination) []byte {
 		buf.WriteString(domain)
 	}
 
-	binary.Write(buf, binary.BigEndian, uint16(dest.Port))
+	binary.Write(buf, binary.BigEndian, dest.Port)
 
 	return buf.Bytes()
 }
