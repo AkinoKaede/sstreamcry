@@ -2,6 +2,8 @@ package shadowsocks
 
 import (
 	"bytes"
+	"crypto/rand"
+	"io"
 
 	"github.com/AkinoKaede/sstreamcry/common/net"
 )
@@ -17,7 +19,12 @@ func EncodeHeaderChain(destination net.Destination, account Account, times int) 
 }
 
 func encode(destination net.Destination, payload []byte, account Account) []byte {
-	buf := bytes.NewBuffer(nil)
+	ivLen := account.Cipher.IVSize()
+	iv := make([]byte, ivLen)
+	io.ReadFull(rand.Reader, iv)
+
+	buf := bytes.NewBuffer(iv)
+
 	buf.Write(ParseDestination(destination))
 	buf.Write(payload)
 

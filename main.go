@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 	"sync"
 
@@ -13,7 +14,7 @@ var wg sync.WaitGroup
 
 func main() {
 	app := &cli.App{
-		Name: "sstreamcty",
+		Name: "sstreamcry",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:     "host",
@@ -63,7 +64,8 @@ func main() {
 				wg.Add(1)
 
 				go func() {
-					shadowsocks.Boom(dest, account, times)
+					err := shadowsocks.Boom(dest, account, times)
+					log.Println(err)
 					wg.Done()
 				}()
 			}
