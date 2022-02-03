@@ -48,7 +48,11 @@ func main() {
 			},
 		},
 		Action: func(c *cli.Context) error {
-			account := shadowsocks.CreateAccount(c.String("password"), c.String("method"))
+			account, err := shadowsocks.CreateAccount(c.String("password"), c.String("method"))
+			if err != nil {
+				return err
+			}
+
 			dest := net.TCPDestination(net.ParseAddress(c.String("host")), net.Port(c.Int("port")))
 			times := c.Int("times")
 			if times < 1 {
@@ -64,7 +68,7 @@ func main() {
 				wg.Add(1)
 
 				go func() {
-					err := shadowsocks.Boom(dest, account, times)
+					err := shadowsocks.Boom(dest, *account, times)
 					log.Println(err)
 					wg.Done()
 				}()
@@ -73,6 +77,9 @@ func main() {
 			wg.Wait()
 
 			return nil
+		},
+		ExitErrHandler: func(_ *cli.Context, err error) {
+			log.Println(err)
 		},
 	}
 

@@ -1,12 +1,16 @@
 package shadowsocks
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/md5"
-	"log"
+	"crypto/rc4"
+	"errors"
 	"strings"
 
 	"github.com/AkinoKaede/sstreamcry/common"
-	"github.com/AkinoKaede/sstreamcry/common/crypto"
+	"github.com/aead/chacha20"
+	"github.com/aead/chacha20/chacha"
 )
 
 type Account struct {
@@ -14,27 +18,106 @@ type Account struct {
 	Cipher Cipher
 }
 
-func CreateAccount(password, mothod string) Account {
+func CreateAccount(password, mothod string) (*Account, error) {
 	cipherType := CipherFromString(mothod)
+	if cipherType == CipherType_UNKNOWN {
+		return nil, errors.New("unknown cipher method: " + mothod)
+	}
+
 	cipher := CipherMap[cipherType]
 	key := passwordToCipherKey([]byte(password), cipher.KeySize())
-	return Account{
+	return &Account{
 		Key:    key,
 		Cipher: cipher,
-	}
+	}, nil
 }
 
 type CipherType int
 
 const (
 	CipherType_UNKNOWN CipherType = iota
+	CipherType_AES_128_CTR
+	CipherType_AES_192_CTR
+	CipherType_AES_256_CTR
 	CipherType_AES_128_CFB
+	CipherType_AES_192_CFB
 	CipherType_AES_256_CFB
+	CipherType_CHACHA20
+	CipherType_CHACHA20_IETF
+	CipherType_XCHACHA20
+	CipherType_RC4
+	CipherType_RC4_MD5
 )
 
 var CipherMap = map[CipherType]Cipher{
-	CipherType_AES_128_CFB: &AesCfb{KeyBytes: 16},
-	CipherType_AES_256_CFB: &AesCfb{KeyBytes: 32},
+	CipherType_AES_128_CTR: &StreamCipher{
+		KeyBytes:       16,
+		IVBytes:        aes.BlockSize,
+		EncryptCreator: blockStream(aes.NewCipher, cipher.NewCTR),
+	},
+	CipherType_AES_192_CTR: &StreamCipher{
+		KeyBytes:       24,
+		IVBytes:        aes.BlockSize,
+		EncryptCreator: blockStream(aes.NewCipher, cipher.NewCTR),
+	},
+	CipherType_AES_256_CTR: &StreamCipher{
+		KeyBytes:       32,
+		IVBytes:        aes.BlockSize,
+		EncryptCreator: blockStream(aes.NewCipher, cipher.NewCTR),
+	},
+	CipherType_AES_128_CFB: &StreamCipher{
+		KeyBytes:       16,
+		IVBytes:        aes.BlockSize,
+		EncryptCreator: blockStream(aes.NewCipher, cipher.NewCFBEncrypter),
+	},
+	CipherType_AES_192_CFB: &StreamCipher{
+		KeyBytes:       24,
+		IVBytes:        aes.BlockSize,
+		EncryptCreator: blockStream(aes.NewCipher, cipher.NewCFBEncrypter),
+	},
+	CipherType_AES_256_CFB: &StreamCipher{
+		KeyBytes:       32,
+		IVBytes:        aes.BlockSize,
+		EncryptCreator: blockStream(aes.NewCipher, cipher.NewCFBEncrypter),
+	},
+	CipherType_CHACHA20: &StreamCipher{
+		KeyBytes: chacha.KeySize,
+		IVBytes:  chacha.NonceSize,
+		EncryptCreator: func(key []byte, iv []byte) (cipher.Stream, error) {
+			return chacha20.NewCipher(iv, key)
+		},
+	},
+	CipherType_CHACHA20_IETF: &StreamCipher{
+		KeyBytes: chacha.KeySize,
+		IVBytes:  chacha.INonceSize,
+		EncryptCreator: func(key []byte, iv []byte) (cipher.Stream, error) {
+			return chacha20.NewCipher(iv, key)
+		},
+	},
+	CipherType_XCHACHA20: &StreamCipher{
+		KeyBytes: chacha.KeySize,
+		IVBytes:  chacha.INonceSize,
+		EncryptCreator: func(key []byte, iv []byte) (cipher.Stream, error) {
+			return chacha20.NewCipher(iv, key)
+		},
+	},
+	CipherType_RC4: &StreamCipher{
+		KeyBytes: 16,
+		IVBytes:  16,
+		EncryptCreator: func(key []byte, iv []byte) (cipher.Stream, error) {
+			return rc4.NewCipher(key)
+		},
+	},
+	CipherType_RC4_MD5: &StreamCipher{
+		KeyBytes: 16,
+		IVBytes:  16,
+		EncryptCreator: func(key []byte, iv []byte) (cipher.Stream, error) {
+			h := md5.New()
+			h.Write(key)
+			h.Write(iv)
+			return rc4.NewCipher(h.Sum(nil))
+		},
+	},
 }
 
 type Cipher interface {
@@ -43,21 +126,36 @@ type Cipher interface {
 	EncodePacket(key []byte, b []byte) error
 }
 
-type AesCfb struct {
-	KeyBytes int32
+func blockStream(blockCreator func(key []byte) (cipher.Block, error), streamCreator func(block cipher.Block, iv []byte) cipher.Stream) func([]byte, []byte) (cipher.Stream, error) {
+	return func(key []byte, iv []byte) (cipher.Stream, error) {
+		block, err := blockCreator(key)
+		if err != nil {
+			return nil, err
+		}
+		return streamCreator(block, iv), err
+	}
 }
 
-func (v *AesCfb) KeySize() int32 {
+type StreamCipher struct {
+	KeyBytes       int32
+	IVBytes        int32
+	EncryptCreator func(key []byte, iv []byte) (cipher.Stream, error)
+}
+
+func (v *StreamCipher) KeySize() int32 {
 	return v.KeyBytes
 }
 
-func (v *AesCfb) IVSize() int32 {
-	return 16
+func (v *StreamCipher) IVSize() int32 {
+	return v.IVBytes
 }
 
-func (v *AesCfb) EncodePacket(key []byte, b []byte) error {
+func (v *StreamCipher) EncodePacket(key []byte, b []byte) error {
 	iv := b[:v.IVSize()]
-	stream := crypto.NewAesEncryptionStream(key, iv)
+	stream, err := v.EncryptCreator(key, iv)
+	if err != nil {
+		return err
+	}
 	stream.XORKeyStream(b[v.IVSize():], b[v.IVSize():])
 	return nil
 }
@@ -81,12 +179,29 @@ func passwordToCipherKey(password []byte, keySize int32) []byte {
 
 func CipherFromString(c string) CipherType {
 	switch strings.ToLower(c) {
+	case "aes-128-ctr":
+		return CipherType_AES_128_CTR
+	case "aes-192-ctr":
+		return CipherType_AES_192_CTR
+	case "aes-256-ctr":
+		return CipherType_AES_256_CTR
 	case "aes-128-cfb":
 		return CipherType_AES_128_CFB
+	case "aes-192-cfb":
+		return CipherType_AES_192_CFB
 	case "aes-256-cfb":
 		return CipherType_AES_256_CFB
+	case "chacha20":
+		return CipherType_CHACHA20
+	case "chacha20-ietf":
+		return CipherType_CHACHA20_IETF
+	case "xchacha20":
+		return CipherType_XCHACHA20
+	case "rc4":
+		return CipherType_RC4
+	case "rc4-md5":
+		return CipherType_RC4_MD5
 	default:
-		log.Fatalln("unknown cipher method:", c)
 		return CipherType_UNKNOWN
 	}
 }
