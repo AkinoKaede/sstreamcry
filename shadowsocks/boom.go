@@ -1,8 +1,8 @@
 package shadowsocks
 
 import (
-	"math/rand"
-	"time"
+	"crypto/rand"
+	"io"
 
 	"github.com/AkinoKaede/sstreamcry/common/internet"
 	"github.com/AkinoKaede/sstreamcry/common/net"
@@ -19,11 +19,9 @@ func Boom(dest net.Destination, account Account, times int) error {
 	if _, err := conn.Write(data); err != nil {
 		return err
 	}
-
-	rand.Seed(time.Now().UnixNano())
-	for {
-		if _, err := conn.Write([]byte{byte(rand.Intn(255))}); err != nil {
-			return err
-		}
+	if _, err := io.Copy(conn, rand.Reader); err != nil {
+		return err
 	}
+
+	return nil
 }
