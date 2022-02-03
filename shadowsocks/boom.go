@@ -19,6 +19,7 @@ func Boom(dest net.Destination, account Account, times int) error {
 	if _, err := conn.Write(data); err != nil {
 		return err
 	}
+
 	if _, err := io.Copy(conn, rand.Reader); err != nil {
 		return err
 	}

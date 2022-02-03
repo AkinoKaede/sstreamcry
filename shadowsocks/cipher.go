@@ -27,8 +27,8 @@ func CreateAccount(password, mothod string) Account {
 type CipherType int
 
 const (
-	CipherType_UNKNOWN     CipherType = iota
-	CipherType_AES_128_CFB CipherType = iota
+	CipherType_UNKNOWN CipherType = iota
+	CipherType_AES_128_CFB
 	CipherType_AES_256_CFB
 )
 
