@@ -79,7 +79,9 @@ func main() {
 			return nil
 		},
 		ExitErrHandler: func(_ *cli.Context, err error) {
-			log.Println(err)
+			if err != nil {
+				log.Println(err)
+			}
 		},
 	}
 
