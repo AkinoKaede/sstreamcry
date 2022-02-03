@@ -1,6 +1,6 @@
 # ShadowStreamCry
 
-A Shadowsocks stream boomer.
+A Shadowsocks stream bomb.
 
 ## Credits
 
@@ -11,7 +11,7 @@ A Shadowsocks stream boomer.
 ## License
 
 ```
-ShadowStreamCry, a Shadowsocks stream boomer. 
+ShadowStreamCry, a Shadowsocks stream bomb. 
 Copyright (C) 2022 AkinoKaede <autmaple@protonmail.com>
 
 This program is free software: you can redistribute it and/or modify
