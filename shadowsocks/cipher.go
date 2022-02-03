@@ -2,6 +2,7 @@ package shadowsocks
 
 import (
 	"crypto/md5"
+	"log"
 	"strings"
 
 	"github.com/AkinoKaede/sstreamcry/common"
@@ -85,6 +86,7 @@ func CipherFromString(c string) CipherType {
 	case "aes-256-cfb":
 		return CipherType_AES_256_CFB
 	default:
+		log.Fatalln("unknown cipher method:", c)
 		return CipherType_UNKNOWN
 	}
 }
