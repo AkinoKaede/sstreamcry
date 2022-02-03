@@ -36,15 +36,14 @@ func main() {
 				Required: true,
 			},
 			&cli.IntFlag{
-				Name:        "times",
-				Aliases:     []string{"t"},
-				DefaultText: "1",
-				Required:    true,
+				Name:    "times",
+				Aliases: []string{"t"},
+				Value:   1,
 			},
 			&cli.IntFlag{
-				Name:        "threads",
-				Aliases:     []string{"tr"},
-				DefaultText: "1",
+				Name:    "threads",
+				Aliases: []string{"tr"},
+				Value:   1,
 			},
 		},
 		Action: func(c *cli.Context) error {
@@ -55,14 +54,7 @@ func main() {
 
 			dest := net.TCPDestination(net.ParseAddress(c.String("host")), net.Port(c.Int("port")))
 			times := c.Int("times")
-			if times < 1 {
-				times = 1
-			}
-
 			threads := c.Int("threads")
-			if threads < 1 {
-				threads = 1
-			}
 
 			for i := 0; i < threads; i++ {
 				wg.Add(1)
