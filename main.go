@@ -17,7 +17,6 @@ func main() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:     "host",
-				Aliases:  []string{"h"},
 				Required: true,
 			},
 			&cli.IntFlag{
@@ -27,7 +26,7 @@ func main() {
 			},
 			&cli.StringFlag{
 				Name:     "password",
-				Aliases:  []string{"p"},
+				Aliases:  []string{"pwd"},
 				Required: true,
 			},
 			&cli.StringFlag{
@@ -36,12 +35,15 @@ func main() {
 				Required: true,
 			},
 			&cli.IntFlag{
-				Name:     "times",
-				Aliases:  []string{"t"},
-				Required: true,
+				Name:        "times",
+				Aliases:     []string{"t"},
+				DefaultText: "1",
+				Required:    true,
 			},
 			&cli.IntFlag{
-				Name: "threads",
+				Name:        "threads",
+				Aliases:     []string{"tr"},
+				DefaultText: "1",
 			},
 		},
 		Action: func(c *cli.Context) error {
