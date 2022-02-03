@@ -10,7 +10,7 @@ import (
 
 func Boom(dest net.Destination, account Account, times int) error {
 	data := EncodeHeaderChain(dest, account, times)
-	conn, err := internet.DialTCP(dest)
+	conn, err := internet.Dial(dest)
 	if err != nil {
 		return err
 	}
