@@ -4,14 +4,26 @@ import (
 	"fmt"
 )
 
+type AddressPort struct {
+	Address Address
+	Port    Port
+}
+
+func (ap AddressPort) String() string {
+	return fmt.Sprintf("%s:%d", ap.Address, ap.Port)
+}
+
 type Destination struct {
 	Address Address
 	Port    Port
 	Network Network
 }
 
-func (d Destination) StringWithoutNetwork() string {
-	return fmt.Sprintf("%s:%d", d.Address, d.Port)
+func (d Destination) AddressPort() AddressPort {
+	return AddressPort{
+		Address: d.Address,
+		Port:    d.Port,
+	}
 }
 
 func TCPDestination(address Address, port Port) Destination {

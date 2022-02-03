@@ -24,7 +24,6 @@ func encode(destination net.Destination, payload []byte, account Account) []byte
 	io.ReadFull(rand.Reader, iv)
 
 	buf := bytes.NewBuffer(iv)
-
 	buf.Write(ParseDestination(destination))
 	buf.Write(payload)
 

@@ -15,5 +15,5 @@ func Dial(dest net.Destination) (gonet.Conn, error) {
 		netStr = "udp"
 	}
 
-	return gonet.Dial(netStr, dest.StringWithoutNetwork())
+	return gonet.Dial(netStr, dest.AddressPort().String())
 }
