@@ -15,7 +15,7 @@ var wg sync.WaitGroup
 func main() {
 	app := &cli.App{
 		Name:    "sstreamcry",
-		Usage:   "A Shadowsocks stream boomer",
+		Usage:   "A Shadowsocks stream bomb",
 		Version: Version,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
