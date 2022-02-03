@@ -1,9 +1,17 @@
 package net
 
+import (
+	"fmt"
+)
+
 type Destination struct {
 	Address Address
 	Port    Port
 	Network Network
+}
+
+func (d Destination) StringWithoutNetwork() string {
+	return fmt.Sprintf("%s:%d", d.Address, d.Port)
 }
 
 func TCPDestination(address Address, port Port) Destination {

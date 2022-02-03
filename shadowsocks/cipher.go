@@ -1,12 +1,32 @@
 package shadowsocks
 
 import (
+	"crypto/md5"
+	"strings"
+
+	"github.com/AkinoKaede/sstreamcry/common"
 	"github.com/AkinoKaede/sstreamcry/common/crypto"
 )
+
+type Account struct {
+	Key    []byte
+	Cipher Cipher
+}
+
+func CreateAccount(password, mothod string) Account {
+	cipherType := CipherFromString(mothod)
+	cipher := CipherMap[cipherType]
+	key := passwordToCipherKey([]byte(password), cipher.KeySize())
+	return Account{
+		Key:    key,
+		Cipher: cipher,
+	}
+}
 
 type CipherType int
 
 const (
+	CipherType_UNKNOWN     CipherType = iota
 	CipherType_AES_128_CFB CipherType = iota
 	CipherType_AES_256_CFB
 )
@@ -39,4 +59,32 @@ func (v *AesCfb) EncodePacket(key []byte, b []byte) error {
 	stream := crypto.NewAesEncryptionStream(key, iv)
 	stream.XORKeyStream(b[v.IVSize():], b[v.IVSize():])
 	return nil
+}
+
+func passwordToCipherKey(password []byte, keySize int32) []byte {
+	key := make([]byte, 0, keySize)
+
+	md5Sum := md5.Sum(password)
+	key = append(key, md5Sum[:]...)
+
+	for int32(len(key)) < keySize {
+		md5Hash := md5.New()
+		common.Must2(md5Hash.Write(md5Sum[:]))
+		common.Must2(md5Hash.Write(password))
+		md5Hash.Sum(md5Sum[:0])
+
+		key = append(key, md5Sum[:]...)
+	}
+	return key
+}
+
+func CipherFromString(c string) CipherType {
+	switch strings.ToLower(c) {
+	case "aes-128-cfb":
+		return CipherType_AES_128_CFB
+	case "aes-256-cfb":
+		return CipherType_AES_256_CFB
+	default:
+		return CipherType_UNKNOWN
+	}
 }
