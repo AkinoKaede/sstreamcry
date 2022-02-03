@@ -14,36 +14,44 @@ var wg sync.WaitGroup
 
 func main() {
 	app := &cli.App{
-		Name: "sstreamcry",
+		Name:    "sstreamcry",
+		Usage:   "A Shadowsocks stream boomer",
+		Version: Version,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:     "host",
+				Name:     "address",
 				Aliases:  []string{"a"},
+				Usage:    "address of Shadowsocks server",
 				Required: true,
 			},
 			&cli.IntFlag{
 				Name:     "port",
 				Aliases:  []string{"p"},
+				Usage:    "port of Shadowsocks server",
 				Required: true,
 			},
 			&cli.StringFlag{
 				Name:     "password",
 				Aliases:  []string{"k"},
+				Usage:    "password of Shadowsocks",
 				Required: true,
 			},
 			&cli.StringFlag{
 				Name:     "method",
 				Aliases:  []string{"m"},
+				Usage:    "cipher method of Shadowsocks",
 				Required: true,
 			},
 			&cli.IntFlag{
 				Name:    "rounds",
 				Aliases: []string{"r"},
+				Usage:   "attack rounds",
 				Value:   1,
 			},
 			&cli.IntFlag{
 				Name:    "threads",
 				Aliases: []string{"t"},
+				Usage:   "attack threads",
 				Value:   1,
 			},
 		},
