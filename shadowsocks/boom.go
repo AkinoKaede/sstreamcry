@@ -8,8 +8,8 @@ import (
 	"github.com/AkinoKaede/sstreamcry/common/net"
 )
 
-func Boom(dest net.Destination, account Account, times int) error {
-	data := EncodeHeaderChain(dest, account, times)
+func Boom(dest net.Destination, account Account, rounds int) error {
+	data := EncodeHeaderChain(dest, account, rounds)
 	conn, err := internet.Dial(dest)
 	if err != nil {
 		return err

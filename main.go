@@ -18,6 +18,7 @@ func main() {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:     "host",
+				Aliases:  []string{"a"},
 				Required: true,
 			},
 			&cli.IntFlag{
@@ -27,7 +28,7 @@ func main() {
 			},
 			&cli.StringFlag{
 				Name:     "password",
-				Aliases:  []string{"pwd"},
+				Aliases:  []string{"k"},
 				Required: true,
 			},
 			&cli.StringFlag{
@@ -36,13 +37,13 @@ func main() {
 				Required: true,
 			},
 			&cli.IntFlag{
-				Name:    "times",
-				Aliases: []string{"t"},
+				Name:    "rounds",
+				Aliases: []string{"r"},
 				Value:   1,
 			},
 			&cli.IntFlag{
 				Name:    "threads",
-				Aliases: []string{"tr"},
+				Aliases: []string{"t"},
 				Value:   1,
 			},
 		},
@@ -53,14 +54,14 @@ func main() {
 			}
 
 			dest := net.TCPDestination(net.ParseAddress(c.String("host")), net.Port(c.Int("port")))
-			times := c.Int("times")
+			rounds := c.Int("rounds")
 			threads := c.Int("threads")
 
 			for i := 0; i < threads; i++ {
 				wg.Add(1)
 
 				go func() {
-					err := shadowsocks.Boom(dest, *account, times)
+					err := shadowsocks.Boom(dest, *account, rounds)
 					log.Println(err)
 					wg.Done()
 				}()

@@ -8,10 +8,10 @@ import (
 	"github.com/AkinoKaede/sstreamcry/common/net"
 )
 
-func EncodeHeaderChain(destination net.Destination, account Account, times int) []byte {
+func EncodeHeaderChain(destination net.Destination, account Account, rounds int) []byte {
 	var data []byte
 
-	for i := 0; i < times; i++ {
+	for i := 0; i < rounds; i++ {
 		data = encode(destination, data, account)
 	}
 
