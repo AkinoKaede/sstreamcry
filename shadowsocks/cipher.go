@@ -6,7 +6,7 @@ import (
 	"crypto/des"
 	"crypto/md5"
 	"crypto/rc4"
-	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/AkinoKaede/sstreamcry/common"
@@ -281,8 +281,8 @@ func passwordToCipherKey(password []byte, keySize int32) []byte {
 	return key
 }
 
-func CipherFromString(c string) (CipherType, error) {
-	switch strings.ToLower(c) {
+func CipherFromString(method string) (CipherType, error) {
+	switch strings.ToLower(method) {
 	case "aes-128-ctr":
 		return CipherType_AES_128_CTR, nil
 	case "aes-192-ctr":
@@ -344,6 +344,6 @@ func CipherFromString(c string) (CipherType, error) {
 	case "camellia-256-cfb8":
 		return CipherType_CAMELLIA_256_CFB8, nil
 	default:
-		return CipherType_UNKNOWN, errors.New("unknown cipher method: " + c)
+		return CipherType_UNKNOWN, fmt.Errorf("unknown cipher method: %s", method)
 	}
 }
