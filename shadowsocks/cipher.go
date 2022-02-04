@@ -12,6 +12,7 @@ import (
 	"github.com/aead/chacha20"
 	"github.com/aead/chacha20/chacha"
 	"github.com/kierdavis/cfb8"
+	"golang.org/x/crypto/blowfish"
 )
 
 type CipherType int
@@ -35,6 +36,7 @@ const (
 	CipherType_XCHACHA20
 	CipherType_RC4
 	CipherType_RC4_MD5
+	CipherType_BF_CFB
 )
 
 var CipherMap = map[CipherType]Cipher{
@@ -136,6 +138,11 @@ var CipherMap = map[CipherType]Cipher{
 			return rc4.NewCipher(h.Sum(nil))
 		},
 	},
+	CipherType_BF_CFB: &StreamCipher{
+		KeyBytes:       16,
+		IVBytes:        blowfish.BlockSize,
+		EncryptCreator: blockStream(func(key []byte) (cipher.Block, error) { return blowfish.NewCipher(key) }, cipher.NewCFBEncrypter),
+	},
 }
 
 type Cipher interface {
@@ -231,6 +238,8 @@ func CipherFromString(c string) (CipherType, error) {
 		return CipherType_RC4, nil
 	case "rc4-md5":
 		return CipherType_RC4_MD5, nil
+	case "bf-cfb", "blowfish-cfb":
+		return CipherType_BF_CFB, nil
 	default:
 		return CipherType_UNKNOWN, errors.New("unknown cipher method: " + c)
 	}

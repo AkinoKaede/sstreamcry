@@ -7,6 +7,7 @@ require (
 	github.com/google/go-cmp v0.5.7
 	github.com/kierdavis/cfb8 v0.0.0-20180105024805-3a17c36ee2f8
 	github.com/urfave/cli/v2 v2.3.0
+	golang.org/x/crypto v0.0.0-20220131195533-30dcbda58838
 )
 
 require (
