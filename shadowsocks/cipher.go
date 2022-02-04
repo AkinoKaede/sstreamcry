@@ -3,6 +3,7 @@ package shadowsocks
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/des"
 	"crypto/md5"
 	"crypto/rc4"
 	"errors"
@@ -39,6 +40,7 @@ const (
 	CipherType_RC4_MD5
 	CipherType_BF_CFB
 	CipherType_CAST5_CFB
+	CipherType_DES_CFB
 )
 
 var CipherMap = map[CipherType]Cipher{
@@ -150,6 +152,11 @@ var CipherMap = map[CipherType]Cipher{
 		IVBytes:        cast5.BlockSize,
 		EncryptCreator: blockStream(func(key []byte) (cipher.Block, error) { return cast5.NewCipher(key) }, cipher.NewCFBEncrypter),
 	},
+	CipherType_DES_CFB: &StreamCipher{
+		KeyBytes:       8,
+		IVBytes:        des.BlockSize,
+		EncryptCreator: blockStream(des.NewCipher, cipher.NewCFBEncrypter),
+	},
 }
 
 type Cipher interface {
@@ -249,6 +256,8 @@ func CipherFromString(c string) (CipherType, error) {
 		return CipherType_BF_CFB, nil
 	case "cast5-cfb":
 		return CipherType_CAST5_CFB, nil
+	case "des-cfb":
+		return CipherType_DES_CFB, nil
 	default:
 		return CipherType_UNKNOWN, errors.New("unknown cipher method: " + c)
 	}
