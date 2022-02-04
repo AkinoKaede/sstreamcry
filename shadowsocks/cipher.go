@@ -5,32 +5,13 @@ import (
 	"crypto/cipher"
 	"crypto/md5"
 	"crypto/rc4"
-	"errors"
 	"strings"
 
 	"github.com/AkinoKaede/sstreamcry/common"
 	"github.com/aead/chacha20"
 	"github.com/aead/chacha20/chacha"
+	"github.com/kierdavis/cfb8"
 )
-
-type Account struct {
-	Key    []byte
-	Cipher Cipher
-}
-
-func CreateAccount(password, mothod string) (*Account, error) {
-	cipherType := CipherFromString(mothod)
-	if cipherType == CipherType_UNKNOWN {
-		return nil, errors.New("unknown cipher method: " + mothod)
-	}
-
-	cipher := CipherMap[cipherType]
-	key := passwordToCipherKey([]byte(password), cipher.KeySize())
-	return &Account{
-		Key:    key,
-		Cipher: cipher,
-	}, nil
-}
 
 type CipherType int
 
@@ -42,6 +23,9 @@ const (
 	CipherType_AES_128_CFB
 	CipherType_AES_192_CFB
 	CipherType_AES_256_CFB
+	CipherType_AES_128_CFB8
+	CipherType_AES_192_CFB8
+	CipherType_AES_256_CFB8
 	CipherType_CHACHA20
 	CipherType_CHACHA20_IETF
 	CipherType_XCHACHA20
@@ -79,6 +63,21 @@ var CipherMap = map[CipherType]Cipher{
 		KeyBytes:       32,
 		IVBytes:        aes.BlockSize,
 		EncryptCreator: blockStream(aes.NewCipher, cipher.NewCFBEncrypter),
+	},
+	CipherType_AES_128_CFB8: &StreamCipher{
+		KeyBytes:       16,
+		IVBytes:        aes.BlockSize,
+		EncryptCreator: blockStream(aes.NewCipher, cfb8.NewEncrypter),
+	},
+	CipherType_AES_192_CFB8: &StreamCipher{
+		KeyBytes:       24,
+		IVBytes:        aes.BlockSize,
+		EncryptCreator: blockStream(aes.NewCipher, cfb8.NewEncrypter),
+	},
+	CipherType_AES_256_CFB8: &StreamCipher{
+		KeyBytes:       32,
+		IVBytes:        aes.BlockSize,
+		EncryptCreator: blockStream(aes.NewCipher, cfb8.NewEncrypter),
 	},
 	CipherType_CHACHA20: &StreamCipher{
 		KeyBytes: chacha.KeySize,
@@ -191,6 +190,12 @@ func CipherFromString(c string) CipherType {
 		return CipherType_AES_192_CFB
 	case "aes-256-cfb":
 		return CipherType_AES_256_CFB
+	case "aes-128-cfb8":
+		return CipherType_AES_128_CFB8
+	case "aes-192-cfb8":
+		return CipherType_AES_192_CFB8
+	case "aes-256-cfb8":
+		return CipherType_AES_256_CFB8
 	case "chacha20":
 		return CipherType_CHACHA20
 	case "chacha20-ietf":
