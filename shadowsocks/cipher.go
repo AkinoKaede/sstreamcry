@@ -12,6 +12,7 @@ import (
 	"github.com/AkinoKaede/sstreamcry/common"
 	"github.com/aead/chacha20"
 	"github.com/aead/chacha20/chacha"
+	"github.com/dgryski/go-idea"
 	"github.com/kierdavis/cfb8"
 	"golang.org/x/crypto/blowfish"
 	"golang.org/x/crypto/cast5"
@@ -41,6 +42,7 @@ const (
 	CipherType_BF_CFB
 	CipherType_CAST5_CFB
 	CipherType_DES_CFB
+	CipherType_IDEA_CFB
 )
 
 var CipherMap = map[CipherType]Cipher{
@@ -157,6 +159,11 @@ var CipherMap = map[CipherType]Cipher{
 		IVBytes:        des.BlockSize,
 		EncryptCreator: blockStream(des.NewCipher, cipher.NewCFBEncrypter),
 	},
+	CipherType_IDEA_CFB: &StreamCipher{
+		KeyBytes:       16,
+		IVBytes:        8,
+		EncryptCreator: blockStream(idea.NewCipher, cipher.NewCFBEncrypter),
+	},
 }
 
 type Cipher interface {
@@ -258,6 +265,8 @@ func CipherFromString(c string) (CipherType, error) {
 		return CipherType_CAST5_CFB, nil
 	case "des-cfb":
 		return CipherType_DES_CFB, nil
+	case "idea-cfb":
+		return CipherType_IDEA_CFB, nil
 	default:
 		return CipherType_UNKNOWN, errors.New("unknown cipher method: " + c)
 	}
