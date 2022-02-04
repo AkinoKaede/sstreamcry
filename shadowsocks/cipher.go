@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/md5"
 	"crypto/rc4"
+	"errors"
 	"strings"
 
 	"github.com/AkinoKaede/sstreamcry/common"
@@ -26,6 +27,9 @@ const (
 	CipherType_AES_128_CFB8
 	CipherType_AES_192_CFB8
 	CipherType_AES_256_CFB8
+	CipherType_AES_128_OFB
+	CipherType_AES_192_OFB
+	CipherType_AES_256_OFB
 	CipherType_CHACHA20
 	CipherType_CHACHA20_IETF
 	CipherType_XCHACHA20
@@ -78,6 +82,21 @@ var CipherMap = map[CipherType]Cipher{
 		KeyBytes:       32,
 		IVBytes:        aes.BlockSize,
 		EncryptCreator: blockStream(aes.NewCipher, cfb8.NewEncrypter),
+	},
+	CipherType_AES_128_OFB: &StreamCipher{
+		KeyBytes:       16,
+		IVBytes:        aes.BlockSize,
+		EncryptCreator: blockStream(aes.NewCipher, cipher.NewOFB),
+	},
+	CipherType_AES_192_OFB: &StreamCipher{
+		KeyBytes:       24,
+		IVBytes:        aes.BlockSize,
+		EncryptCreator: blockStream(aes.NewCipher, cipher.NewOFB),
+	},
+	CipherType_AES_256_OFB: &StreamCipher{
+		KeyBytes:       32,
+		IVBytes:        aes.BlockSize,
+		EncryptCreator: blockStream(aes.NewCipher, cipher.NewOFB),
 	},
 	CipherType_CHACHA20: &StreamCipher{
 		KeyBytes: chacha.KeySize,
@@ -176,37 +195,43 @@ func passwordToCipherKey(password []byte, keySize int32) []byte {
 	return key
 }
 
-func CipherFromString(c string) CipherType {
+func CipherFromString(c string) (CipherType, error) {
 	switch strings.ToLower(c) {
 	case "aes-128-ctr":
-		return CipherType_AES_128_CTR
+		return CipherType_AES_128_CTR, nil
 	case "aes-192-ctr":
-		return CipherType_AES_192_CTR
+		return CipherType_AES_192_CTR, nil
 	case "aes-256-ctr":
-		return CipherType_AES_256_CTR
+		return CipherType_AES_256_CTR, nil
 	case "aes-128-cfb":
-		return CipherType_AES_128_CFB
+		return CipherType_AES_128_CFB, nil
 	case "aes-192-cfb":
-		return CipherType_AES_192_CFB
+		return CipherType_AES_192_CFB, nil
 	case "aes-256-cfb":
-		return CipherType_AES_256_CFB
+		return CipherType_AES_256_CFB, nil
 	case "aes-128-cfb8":
-		return CipherType_AES_128_CFB8
+		return CipherType_AES_128_CFB8, nil
 	case "aes-192-cfb8":
-		return CipherType_AES_192_CFB8
+		return CipherType_AES_192_CFB8, nil
 	case "aes-256-cfb8":
-		return CipherType_AES_256_CFB8
+		return CipherType_AES_256_CFB8, nil
+	case "aes-128-ofb":
+		return CipherType_AES_128_OFB, nil
+	case "aes-192-ofb":
+		return CipherType_AES_192_OFB, nil
+	case "aes-256-ofb":
+		return CipherType_AES_256_OFB, nil
 	case "chacha20":
-		return CipherType_CHACHA20
+		return CipherType_CHACHA20, nil
 	case "chacha20-ietf":
-		return CipherType_CHACHA20_IETF
+		return CipherType_CHACHA20_IETF, nil
 	case "xchacha20":
-		return CipherType_XCHACHA20
+		return CipherType_XCHACHA20, nil
 	case "rc4":
-		return CipherType_RC4
+		return CipherType_RC4, nil
 	case "rc4-md5":
-		return CipherType_RC4_MD5
+		return CipherType_RC4_MD5, nil
 	default:
-		return CipherType_UNKNOWN
+		return CipherType_UNKNOWN, errors.New("unknown cipher method: " + c)
 	}
 }
