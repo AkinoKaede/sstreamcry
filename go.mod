@@ -6,6 +6,7 @@ require (
 	github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da
 	github.com/dgryski/go-idea v0.0.0-20170306091226-d2fb45a411fb
 	github.com/dgryski/go-rc2 v0.0.0-20150621095337-8a9021637152
+	github.com/geeksbaek/seed v0.0.0-20180909040025-2a7f5fb92e22
 	github.com/google/go-cmp v0.5.7
 	github.com/kierdavis/cfb8 v0.0.0-20180105024805-3a17c36ee2f8
 	github.com/urfave/cli/v2 v2.3.0

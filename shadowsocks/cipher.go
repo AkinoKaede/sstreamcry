@@ -14,6 +14,7 @@ import (
 	"github.com/aead/chacha20/chacha"
 	"github.com/dgryski/go-idea"
 	"github.com/dgryski/go-rc2"
+	"github.com/geeksbaek/seed"
 	"github.com/kierdavis/cfb8"
 	"golang.org/x/crypto/blowfish"
 	"golang.org/x/crypto/cast5"
@@ -45,6 +46,7 @@ const (
 	CipherType_DES_CFB
 	CipherType_IDEA_CFB
 	CipherType_RC2_CFB
+	CipherType_SEED_CFB
 )
 
 var CipherMap = map[CipherType]Cipher{
@@ -171,6 +173,11 @@ var CipherMap = map[CipherType]Cipher{
 		IVBytes:        rc2.BlockSize,
 		EncryptCreator: blockStream(func(key []byte) (cipher.Block, error) { return rc2.New(key, 16) }, cipher.NewCFBEncrypter),
 	},
+	CipherType_SEED_CFB: &StreamCipher{
+		KeyBytes:       16,
+		IVBytes:        seed.BlockSize,
+		EncryptCreator: blockStream(seed.NewCipher, cipher.NewCFBEncrypter),
+	},
 }
 
 type Cipher interface {
@@ -276,6 +283,8 @@ func CipherFromString(c string) (CipherType, error) {
 		return CipherType_IDEA_CFB, nil
 	case "rc2-cfb":
 		return CipherType_RC2_CFB, nil
+	case "seed-cfb":
+		return CipherType_SEED_CFB, nil
 	default:
 		return CipherType_UNKNOWN, errors.New("unknown cipher method: " + c)
 	}
