@@ -13,6 +13,7 @@ import (
 	"github.com/aead/chacha20/chacha"
 	"github.com/kierdavis/cfb8"
 	"golang.org/x/crypto/blowfish"
+	"golang.org/x/crypto/cast5"
 )
 
 type CipherType int
@@ -37,6 +38,7 @@ const (
 	CipherType_RC4
 	CipherType_RC4_MD5
 	CipherType_BF_CFB
+	CipherType_CAST5_CFB
 )
 
 var CipherMap = map[CipherType]Cipher{
@@ -143,6 +145,11 @@ var CipherMap = map[CipherType]Cipher{
 		IVBytes:        blowfish.BlockSize,
 		EncryptCreator: blockStream(func(key []byte) (cipher.Block, error) { return blowfish.NewCipher(key) }, cipher.NewCFBEncrypter),
 	},
+	CipherType_CAST5_CFB: &StreamCipher{
+		KeyBytes:       16,
+		IVBytes:        cast5.BlockSize,
+		EncryptCreator: blockStream(func(key []byte) (cipher.Block, error) { return cast5.NewCipher(key) }, cipher.NewCFBEncrypter),
+	},
 }
 
 type Cipher interface {
@@ -240,6 +247,8 @@ func CipherFromString(c string) (CipherType, error) {
 		return CipherType_RC4_MD5, nil
 	case "bf-cfb", "blowfish-cfb":
 		return CipherType_BF_CFB, nil
+	case "cast5-cfb":
+		return CipherType_CAST5_CFB, nil
 	default:
 		return CipherType_UNKNOWN, errors.New("unknown cipher method: " + c)
 	}
