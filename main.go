@@ -61,7 +61,7 @@ func main() {
 				return err
 			}
 
-			dest := net.TCPDestination(net.ParseAddress(c.String("host")), net.Port(c.Int("port")))
+			dest := net.TCPDestination(net.ParseAddress(c.String("address")), net.Port(c.Int("port")))
 			rounds := c.Int("rounds")
 			threads := c.Int("threads")
 
