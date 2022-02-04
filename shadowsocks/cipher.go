@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/AkinoKaede/sstreamcry/common"
+	"github.com/AkinoKaede/sstreamcry/common/crypto/salsa20"
 	"github.com/aead/chacha20"
 	"github.com/aead/chacha20/chacha"
 	"github.com/dgryski/go-camellia"
@@ -37,6 +38,7 @@ const (
 	CipherType_AES_128_OFB
 	CipherType_AES_192_OFB
 	CipherType_AES_256_OFB
+	CipherType_SALSA20
 	CipherType_CHACHA20
 	CipherType_CHACHA20_IETF
 	CipherType_XCHACHA20
@@ -116,6 +118,11 @@ var CipherMap = map[CipherType]Cipher{
 		KeyBytes:       32,
 		IVBytes:        aes.BlockSize,
 		EncryptCreator: blockStream(aes.NewCipher, cipher.NewOFB),
+	},
+	CipherType_SALSA20: &StreamCipher{
+		KeyBytes:       32,
+		IVBytes:        8,
+		EncryptCreator: salsa20.New,
 	},
 	CipherType_CHACHA20: &StreamCipher{
 		KeyBytes: chacha.KeySize,
@@ -300,6 +307,8 @@ func CipherFromString(c string) (CipherType, error) {
 		return CipherType_AES_192_OFB, nil
 	case "aes-256-ofb":
 		return CipherType_AES_256_OFB, nil
+	case "salsa20":
+		return CipherType_SALSA20, nil
 	case "chacha20":
 		return CipherType_CHACHA20, nil
 	case "chacha20-ietf":
