@@ -12,6 +12,7 @@ import (
 	"github.com/AkinoKaede/sstreamcry/common"
 	"github.com/aead/chacha20"
 	"github.com/aead/chacha20/chacha"
+	"github.com/dgryski/go-camellia"
 	"github.com/dgryski/go-idea"
 	"github.com/dgryski/go-rc2"
 	"github.com/geeksbaek/seed"
@@ -47,6 +48,12 @@ const (
 	CipherType_IDEA_CFB
 	CipherType_RC2_CFB
 	CipherType_SEED_CFB
+	CipherType_CAMELLIA_128_CFB
+	CipherType_CAMELLIA_192_CFB
+	CipherType_CAMELLIA_256_CFB
+	CipherType_CAMELLIA_128_CFB8
+	CipherType_CAMELLIA_192_CFB8
+	CipherType_CAMELLIA_256_CFB8
 )
 
 var CipherMap = map[CipherType]Cipher{
@@ -178,6 +185,36 @@ var CipherMap = map[CipherType]Cipher{
 		IVBytes:        seed.BlockSize,
 		EncryptCreator: blockStream(seed.NewCipher, cipher.NewCFBEncrypter),
 	},
+	CipherType_CAMELLIA_128_CFB: &StreamCipher{
+		KeyBytes:       16,
+		IVBytes:        camellia.BlockSize,
+		EncryptCreator: blockStream(camellia.New, cipher.NewCFBEncrypter),
+	},
+	CipherType_CAMELLIA_192_CFB: &StreamCipher{
+		KeyBytes:       24,
+		IVBytes:        camellia.BlockSize,
+		EncryptCreator: blockStream(camellia.New, cipher.NewCFBEncrypter),
+	},
+	CipherType_CAMELLIA_256_CFB: &StreamCipher{
+		KeyBytes:       32,
+		IVBytes:        camellia.BlockSize,
+		EncryptCreator: blockStream(camellia.New, cipher.NewCFBEncrypter),
+	},
+	CipherType_CAMELLIA_128_CFB8: &StreamCipher{
+		KeyBytes:       16,
+		IVBytes:        camellia.BlockSize,
+		EncryptCreator: blockStream(camellia.New, cfb8.NewEncrypter),
+	},
+	CipherType_CAMELLIA_192_CFB8: &StreamCipher{
+		KeyBytes:       24,
+		IVBytes:        camellia.BlockSize,
+		EncryptCreator: blockStream(camellia.New, cfb8.NewEncrypter),
+	},
+	CipherType_CAMELLIA_256_CFB8: &StreamCipher{
+		KeyBytes:       32,
+		IVBytes:        camellia.BlockSize,
+		EncryptCreator: blockStream(camellia.New, cfb8.NewEncrypter),
+	},
 }
 
 type Cipher interface {
@@ -285,6 +322,18 @@ func CipherFromString(c string) (CipherType, error) {
 		return CipherType_RC2_CFB, nil
 	case "seed-cfb":
 		return CipherType_SEED_CFB, nil
+	case "camellia-128-cfb":
+		return CipherType_CAMELLIA_128_CFB, nil
+	case "camellia-192-cfb":
+		return CipherType_CAMELLIA_192_CFB, nil
+	case "camellia-256-cfb":
+		return CipherType_CAMELLIA_256_CFB, nil
+	case "camellia-128-cfb8":
+		return CipherType_CAMELLIA_128_CFB8, nil
+	case "camellia-192-cfb8":
+		return CipherType_CAMELLIA_192_CFB8, nil
+	case "camellia-256-cfb8":
+		return CipherType_CAMELLIA_256_CFB8, nil
 	default:
 		return CipherType_UNKNOWN, errors.New("unknown cipher method: " + c)
 	}
